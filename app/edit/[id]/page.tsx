@@ -6,7 +6,7 @@ import InvoiceForm from "../../../components/InvoiceForm";
 
 export default function EditInvoice() {
   const params = useParams();
-  const id = params.id;
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
   const [invoice, setInvoice] = useState<any>(null);
 

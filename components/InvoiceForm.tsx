@@ -3,6 +3,7 @@ import { useState } from "react";
 import InvoicePreview from "./InvoicePreview";
 import Link from "next/link";
 
+/* ✅ TYPES */
 type Item = {
   id: string;
   desc: string;
@@ -12,77 +13,102 @@ type Item = {
   isLumpsum: boolean;
 };
 
-export default function InvoiceForm({ initialData, invoiceId }: any){
+type Props = {
+  initialData?: any;
+  invoiceId?: string;
+};
 
-const [type, setType] = useState(initialData?.type || "Estimate");
-const [customer, setCustomer] = useState(initialData?.customer || "");
-const [address, setAddress] = useState(initialData?.address || "");
-const [date, setDate] = useState(initialData?.date || "");
-const [advance, setAdvance] = useState(initialData?.advance || 0);
-const [notes, setNotes] = useState(initialData?.notes || "");
+/* ✅ COMPONENT */
+export default function InvoiceForm({ initialData, invoiceId }: Props) {
+  const [type, setType] = useState<string>(
+    initialData?.type || "Estimate"
+  );
+  const [customer, setCustomer] = useState<string>(
+    initialData?.customer || ""
+  );
+  const [address, setAddress] = useState<string>(
+    initialData?.address || ""
+  );
+  const [date, setDate] = useState<string>(
+    initialData?.date || ""
+  );
+  const [advance, setAdvance] = useState<number>(
+    initialData?.advance || 0
+  );
+  const [notes, setNotes] = useState<string>(
+    initialData?.notes || ""
+  );
 
-const [items, setItems] = useState(
-  initialData?.items || [
-    {
-      id: "1",
-      desc: "",
-      sqft: 0,
-      rate: 0,
-      amount: 0,
-      isLumpsum: false,
-    },
-  ]
-);
+  /* ✅ IMPORTANT: TYPE FIX */
+  const [items, setItems] = useState<Item[]>(
+    initialData?.items || [
+      {
+        id: "1",
+        desc: "",
+        sqft: 0,
+        rate: 0,
+        amount: 0,
+        isLumpsum: false,
+      },
+    ]
+  );
 
-const saveInvoice = async () => {
-  const payload = {
-    type,
-    customer,
-    address,
-    date,
-    items,
-    advance,
-    total,
-    grandTotal,
-    notes,
+  /* ✅ TOTAL CALCULATIONS */
+  const total = items.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+  const grandTotal = total - advance;
+
+  /* ✅ SAVE / UPDATE */
+  const saveInvoice = async () => {
+    const payload = {
+      type,
+      customer,
+      address,
+      date,
+      items,
+      advance,
+      total,
+      grandTotal,
+      notes,
+    };
+
+    try {
+      let res;
+
+      if (invoiceId) {
+        // ✅ UPDATE
+        res = await fetch("/api/invoice", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: invoiceId,
+            data: payload,
+          }),
+        });
+      } else {
+        // ✅ CREATE
+        res = await fetch("/api/invoice", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      if (res.ok) {
+        alert(invoiceId ? "✅ Updated successfully" : "✅ Saved successfully");
+      } else {
+        alert("❌ Error saving");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("❌ Request failed");
+    }
   };
 
-  try {
-    let res;
-
-    if (invoiceId) {
-      // ✅ UPDATE EXISTING
-      res = await fetch("/api/invoice", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: invoiceId,
-          data: payload,
-        }),
-      });
-    } else {
-      // ✅ CREATE NEW
-      res = await fetch("/api/invoice", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-    }
-
-    if (res.ok) {
-      alert(invoiceId ? "✅ Updated successfully" : "✅ Saved successfully");
-    } else {
-      alert("❌ Error");
-    }
-  } catch (error) {
-    console.error(error);
-    alert("❌ Failed");
-  }
-};
+  /* ✅ ADD ITEM */
   const addItem = () => {
     setItems([
       ...items,
@@ -97,27 +123,28 @@ const saveInvoice = async () => {
     ]);
   };
 
-  
-const updateItem = (id: string, field: keyof Item, value: any) => {
-  const updated = items.map((item: Item) => {
-    if (item.id === id) {
-      const newItem = { ...item, [field]: value };
+  /* ✅ UPDATE ITEM */
+  const updateItem = (id: string, field: keyof Item, value: any) => {
+    const updated = items.map((item: Item) => {
+      if (item.id === id) {
+        const newItem = { ...item, [field]: value };
 
-      if (!newItem.isLumpsum) {
-        newItem.amount = newItem.sqft * newItem.rate;
+        // ✅ Auto calculation
+        if (!newItem.isLumpsum) {
+          newItem.amount = newItem.sqft * newItem.rate;
+        }
+
+        return newItem;
       }
+      return item;
+    });
 
-      return newItem;
-    }
-    return item;
-  });
+    setItems(updated);
+  };
 
-  setItems(updated);
-};
-
-
+  /* ✅ TOGGLE LUMPSUM */
   const toggleLumpsum = (id: string) => {
-    const updated = items.map((item) => {
+    const updated = items.map((item: Item) => {
       if (item.id === id) {
         return {
           ...item,
@@ -132,26 +159,23 @@ const updateItem = (id: string, field: keyof Item, value: any) => {
     setItems(updated);
   };
 
-  const total = items.reduce((sum, i) => sum + Number(i.amount || 0), 0);
-  const grandTotal = total - advance;
-
+  /* ✅ UI */
   return (
     <div className="grid grid-cols-2 gap-6 p-4">
-    
       {/* ✅ LEFT SIDE FORM */}
       <div className="bg-white p-4 border shadow">
         
         <Link href="/invoices">
-        <button className="bg-gray-800 text-white px-4 py-2 mb-4">
+          <button className="bg-gray-800 text-white px-4 py-2 mb-4">
             View Invoices
-        </button>
+          </button>
         </Link>
 
         <h2 className="text-xl font-bold mb-4">Invoice Form</h2>
 
         {/* TYPE */}
         <div className="mb-3">
-          <label className="block">Type</label>
+          <label>Type</label>
           <select
             className="border p-2 w-full"
             value={type}
@@ -193,7 +217,7 @@ const updateItem = (id: string, field: keyof Item, value: any) => {
           />
         </div>
 
-        {/* ✅ ITEMS TABLE */}
+        {/* ✅ ITEMS */}
         <h3 className="font-semibold mt-4">Items</h3>
 
         <table className="w-full border mt-2 text-sm">
@@ -208,7 +232,7 @@ const updateItem = (id: string, field: keyof Item, value: any) => {
           </thead>
 
           <tbody>
-            {items.map((item) => (
+            {items.map((item: Item) => (
               <tr key={item.id}>
                 <td className="border">
                   <input
@@ -220,7 +244,6 @@ const updateItem = (id: string, field: keyof Item, value: any) => {
                   />
                 </td>
 
-                {/* SqFt */}
                 <td className="border">
                   <input
                     type="number"
@@ -233,7 +256,6 @@ const updateItem = (id: string, field: keyof Item, value: any) => {
                   />
                 </td>
 
-                {/* Rate */}
                 <td className="border">
                   <input
                     type="number"
@@ -246,7 +268,6 @@ const updateItem = (id: string, field: keyof Item, value: any) => {
                   />
                 </td>
 
-                {/* Amount */}
                 <td className="border">
                   <input
                     type="number"
@@ -258,7 +279,6 @@ const updateItem = (id: string, field: keyof Item, value: any) => {
                   />
                 </td>
 
-                {/* Lumpsum toggle */}
                 <td className="border text-center">
                   <input
                     type="checkbox"
@@ -284,36 +304,32 @@ const updateItem = (id: string, field: keyof Item, value: any) => {
           <input
             type="number"
             className="border p-2 w-full"
+            value={advance}
             onChange={(e) => setAdvance(Number(e.target.value))}
           />
         </div>
-        {/* ✅ NOTES */}
+
+        {/* NOTES */}
         <div className="mt-4">
-        <label>Notes</label>
-        <textarea
+          <label>Notes</label>
+          <textarea
             className="border p-2 w-full"
             rows={3}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Enter notes (optional)"
-        />
-</div>
+          />
+        </div>
 
-
-
-<button
-  onClick={saveInvoice}
-  className="bg-green-600 text-white px-4 py-2 mt-3"
->
-  {invoiceId ? "Update Invoice" : "Save Invoice"}
-</button>
-
-
+        {/* SAVE BUTTON */}
+        <button
+          onClick={saveInvoice}
+          className="bg-green-600 text-white px-4 py-2 mt-3"
+        >
+          {invoiceId ? "Update Invoice" : "Save Invoice"}
+        </button>
       </div>
 
-      
-
-      {/* ✅ RIGHT SIDE PREVIEW */}
+      {/* ✅ PREVIEW */}
       <InvoicePreview
         type={type}
         customer={customer}

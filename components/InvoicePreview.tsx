@@ -15,24 +15,26 @@ export default function InvoicePreview(props: any) {
 
   const fileName = `${customerName}_${props.type}.pdf`;
 
-  html2pdf()
-    .set({
-      filename: fileName,
-      margin: 0,   // ✅ IMPORTANT
-      jsPDF: {
-        unit: "mm",
-        format: "a4",
-        orientation: "portrait",
-      },
-      html2canvas: {
-        scale: 1.5,   // ✅ reduce from 2 → prevents overflow
-      },
-      pagebreak: {
-        mode: ["avoid-all", "css", "legacy"],  // ✅ strong control
-      },
-    })
-    .from(element)
-    .save();
+ 
+html2pdf()
+  .set({
+    filename: fileName,
+    margin: 0,
+    jsPDF: {
+      unit: "mm",
+      format: "a4",
+      orientation: "portrait",
+    },
+    html2canvas: {
+      scale: 1.5,
+    },
+    pagebreak: {
+      mode: ["avoid-all", "css", "legacy"],
+    },
+  } as any)   // ✅ ✅ ADD THIS
+  .from(element)
+  .save();
+
 };
 
   return (

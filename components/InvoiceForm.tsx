@@ -23,6 +23,39 @@ export default function InvoiceForm() {
     { id: "1", desc: "", sqft: 0, rate: 0, amount: 0, isLumpsum: false },
   ]);
 
+  const saveInvoice = async () => {
+  const payload = {
+    type,
+    customer,
+    address,
+    date,
+    items,
+    advance,
+    total,
+    grandTotal,
+    notes,
+  };
+
+  try {
+    const res = await fetch("/api/invoice", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      alert("✅ Saved to DB");
+    } else {
+      alert("❌ Failed to save");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("❌ Error occurred");
+  }
+};
+
   const addItem = () => {
     setItems([
       ...items,
@@ -231,6 +264,15 @@ export default function InvoiceForm() {
             placeholder="Enter notes (optional)"
         />
 </div>
+
+
+<button
+  onClick={saveInvoice}
+  className="bg-green-600 text-white px-4 py-2 mt-3"
+>
+  Save Invoice
+</button>
+
       </div>
 
       

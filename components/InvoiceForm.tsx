@@ -97,23 +97,24 @@ const saveInvoice = async () => {
     ]);
   };
 
-  const updateItem = (id: string, field: keyof Item, value: any) => {
-    const updated = items.map((item) => {
-      if (item.id === id) {
-        const newItem = { ...item, [field]: value };
+  
+const updateItem = (id: string, field: keyof Item, value: any) => {
+  const updated = items.map((item: Item) => {
+    if (item.id === id) {
+      const newItem = { ...item, [field]: value };
 
-        // ✅ Calculation logic
-        if (!newItem.isLumpsum) {
-          newItem.amount = newItem.sqft * newItem.rate;
-        }
-
-        return newItem;
+      if (!newItem.isLumpsum) {
+        newItem.amount = newItem.sqft * newItem.rate;
       }
-      return item;
-    });
 
-    setItems(updated);
-  };
+      return newItem;
+    }
+    return item;
+  });
+
+  setItems(updated);
+};
+
 
   const toggleLumpsum = (id: string) => {
     const updated = items.map((item) => {

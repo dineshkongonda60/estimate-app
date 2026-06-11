@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import InvoicePreview from "./InvoicePreview";
 import Link from "next/link";
@@ -20,26 +21,15 @@ type Props = {
 
 /* ✅ COMPONENT */
 export default function InvoiceForm({ initialData, invoiceId }: Props) {
-  const [type, setType] = useState<string>(
-    initialData?.type || "Estimate"
-  );
-  const [customer, setCustomer] = useState<string>(
-    initialData?.customer || ""
-  );
-  const [address, setAddress] = useState<string>(
-    initialData?.address || ""
-  );
-  const [date, setDate] = useState<string>(
-    initialData?.date || ""
-  );
-  const [advance, setAdvance] = useState<number>(
-    initialData?.advance || 0
-  );
-  const [notes, setNotes] = useState<string>(
-    initialData?.notes || ""
-  );
+  const [activeTab, setActiveTab] = useState<"form" | "preview">("form");
 
-  /* ✅ IMPORTANT: TYPE FIX */
+  const [type, setType] = useState(initialData?.type || "Estimate");
+  const [customer, setCustomer] = useState(initialData?.customer || "");
+  const [address, setAddress] = useState(initialData?.address || "");
+  const [date, setDate] = useState(initialData?.date || "");
+  const [advance, setAdvance] = useState(initialData?.advance || 0);
+  const [notes, setNotes] = useState(initialData?.notes || "");
+
   const [items, setItems] = useState<Item[]>(
     initialData?.items || [
       {
@@ -53,7 +43,7 @@ export default function InvoiceForm({ initialData, invoiceId }: Props) {
     ]
   );
 
-  /* ✅ TOTAL CALCULATIONS */
+  /* ✅ TOTALS */
   const total = items.reduce((sum, i) => sum + Number(i.amount || 0), 0);
   const grandTotal = total - advance;
 
@@ -71,40 +61,27 @@ export default function InvoiceForm({ initialData, invoiceId }: Props) {
       notes,
     };
 
-    try {
-      let res;
+    let res;
 
-      if (invoiceId) {
-        // ✅ UPDATE
-        res = await fetch("/api/invoice", {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            id: invoiceId,
-            data: payload,
-          }),
-        });
-      } else {
-        // ✅ CREATE
-        res = await fetch("/api/invoice", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-      }
+    if (invoiceId) {
+      res = await fetch("/api/invoice", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: invoiceId, data: payload }),
+      });
+    } else {
+      res = await fetch("/api/invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    }
 
-      if (res.ok) {
-        alert(invoiceId ? "✅ Updated successfully" : "✅ Saved successfully");
-      } else {
-        alert("❌ Error saving");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("❌ Request failed");
+    if (res.ok) {
+      alert(invoiceId ? "✅ Updated!" : "✅ Saved!");
+      setActiveTab("preview"); // ✅ auto switch
+    } else {
+      alert("❌ Error");
     }
   };
 
@@ -129,7 +106,6 @@ export default function InvoiceForm({ initialData, invoiceId }: Props) {
       if (item.id === id) {
         const newItem = { ...item, [field]: value };
 
-        // ✅ Auto calculation
         if (!newItem.isLumpsum) {
           newItem.amount = newItem.sqft * newItem.rate;
         }
@@ -159,214 +135,233 @@ export default function InvoiceForm({ initialData, invoiceId }: Props) {
     setItems(updated);
   };
 
-  /* ✅ UI */
- return (
-  <div className="min-h-screen bg-gray-100 p-3 md:p-6">
-
-    {/* ✅ HEADER */}
-    <div className="flex justify-between items-center mb-4">
-      <h1 className="text-xl md:text-2xl font-semibold">
-        {invoiceId ? "Edit Invoice" : "Create Invoice"}
-      </h1>
+  /* ✅ FORM UI */
+  const FormUI = (
+    <div className="bg-white rounded-xl border p-4 space-y-4">
 
       <Link href="/invoices">
-        <button className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm">
+        <button className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm w-full">
           View Invoices
         </button>
       </Link>
-    </div>
 
-    {/* ✅ LAYOUT */}
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-      {/* ✅ FORM CARD */}
-      <div className="bg-white rounded-xl shadow-sm border p-4 md:p-6 space-y-4">
-
-        {/* TYPE + DATE */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-sm text-gray-600">Type</label>
-            <select
-              className="border mt-1 p-2 w-full rounded-lg"
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-            >
-              <option>Estimate</option>
-              <option>Bill</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="text-sm text-gray-600">Date</label>
-            <input
-              type="date"
-              className="border mt-1 p-2 w-full rounded-lg"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {/* CUSTOMER */}
+      {/* TYPE & DATE */}
+      <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-sm text-gray-600">Customer Name</label>
-          <input
+          <label className="text-sm">Type</label>
+          <select
             className="border mt-1 p-2 w-full rounded-lg"
-            value={customer}
-            onChange={(e) => setCustomer(e.target.value)}
-          />
-        </div>
-
-        {/* ADDRESS */}
-        <div>
-          <label className="text-sm text-gray-600">Address</label>
-          <textarea
-            className="border mt-1 p-2 w-full rounded-lg"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-          />
-        </div>
-
-        {/* ✅ ITEMS */}
-        <div>
-          <h3 className="font-medium mb-2">Items</h3>
-
-          <div className="overflow-x-auto">
-            <table className="min-w-[600px] w-full text-sm border rounded-lg overflow-hidden">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-2 text-left">Desc</th>
-                  <th className="p-2">SqFt</th>
-                  <th className="p-2">Rate</th>
-                  <th className="p-2">Amount</th>
-                  <th className="p-2">Lump</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {items.map((item: Item) => (
-                  <tr key={item.id} className="border-t">
-                    <td>
-                      <input
-                        className="w-full p-2 outline-none"
-                        value={item.desc}
-                        onChange={(e) =>
-                          updateItem(item.id, "desc", e.target.value)
-                        }
-                      />
-                    </td>
-
-                    <td>
-                      <input
-                        type="number"
-                        disabled={item.isLumpsum}
-                        className="w-full p-2 text-center outline-none"
-                        value={item.sqft}
-                        onChange={(e) =>
-                          updateItem(item.id, "sqft", Number(e.target.value))
-                        }
-                      />
-                    </td>
-
-                    <td>
-                      <input
-                        type="number"
-                        disabled={item.isLumpsum}
-                        className="w-full p-2 text-center outline-none"
-                        value={item.rate}
-                        onChange={(e) =>
-                          updateItem(item.id, "rate", Number(e.target.value))
-                        }
-                      />
-                    </td>
-
-                    <td>
-                      <input
-                        type="number"
-                        className="w-full p-2 text-center outline-none"
-                        value={item.amount}
-                        onChange={(e) =>
-                          updateItem(item.id, "amount", Number(e.target.value))
-                        }
-                      />
-                    </td>
-
-                    <td className="text-center">
-                      <input
-                        type="checkbox"
-                        checked={item.isLumpsum}
-                        onChange={() => toggleLumpsum(item.id)}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <button
-            onClick={addItem}
-            className="mt-3 bg-blue-500 text-white px-4 py-2 rounded-lg w-full md:w-auto"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
           >
-            + Add Item
-          </button>
+            <option>Estimate</option>
+            <option>Bill</option>
+          </select>
         </div>
 
-        {/* ✅ TOTAL SECTION */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm text-gray-600">Advance</label>
-            <input
-              type="number"
-              className="border mt-1 p-2 w-full rounded-lg"
-              value={advance}
-              onChange={(e) => setAdvance(Number(e.target.value))}
-            />
-          </div>
-
-          <div className="flex flex-col justify-end text-right">
-            <p className="text-sm">Total: ₹{total}</p>
-            <p className="text-sm">Advance: ₹{advance}</p>
-            <p className="font-semibold">Grand: ₹{grandTotal}</p>
-          </div>
-        </div>
-
-        {/* NOTES */}
         <div>
-          <label className="text-sm text-gray-600">Notes</label>
-          <textarea
+          <label className="text-sm">Date</label>
+          <input
+            type="date"
             className="border mt-1 p-2 w-full rounded-lg"
-            rows={3}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
           />
         </div>
+      </div>
 
-        {/* ✅ ACTION BUTTON */}
+      {/* CUSTOMER */}
+      <div>
+        <label className="text-sm">Customer</label>
+        <input
+          className="border mt-1 p-2 w-full rounded-lg"
+          value={customer}
+          onChange={(e) => setCustomer(e.target.value)}
+        />
+      </div>
+
+      {/* ADDRESS */}
+      <textarea
+        className="border p-2 w-full rounded-lg"
+        value={address}
+        onChange={(e) => setAddress(e.target.value)}
+      />
+
+      {/* TABLE */}
+      <div className="overflow-x-auto">
+        <table className="min-w-[600px] w-full text-sm border rounded-lg">
+          <thead className="bg-gray-100">
+            <tr>
+              <th>Desc</th>
+              <th>SqFt</th>
+              <th>Rate</th>
+              <th>Amount</th>
+              <th>Lump</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {items.map((item: Item) => (
+              <tr key={item.id}>
+                <td>
+                  <input
+                    className="w-full p-2"
+                    value={item.desc}
+                    onChange={(e) =>
+                      updateItem(item.id, "desc", e.target.value)
+                    }
+                  />
+                </td>
+
+                <td>
+                  <input
+                    type="number"
+                    disabled={item.isLumpsum}
+                    value={item.sqft}
+                    onChange={(e) =>
+                      updateItem(item.id, "sqft", Number(e.target.value))
+                    }
+                  />
+                </td>
+
+                <td>
+                  <input
+                    type="number"
+                    disabled={item.isLumpsum}
+                    value={item.rate}
+                    onChange={(e) =>
+                      updateItem(item.id, "rate", Number(e.target.value))
+                    }
+                  />
+                </td>
+
+                <td>
+                  <input
+                    type="number"
+                    value={item.amount}
+                    onChange={(e) =>
+                      updateItem(item.id, "amount", Number(e.target.value))
+                    }
+                  />
+                </td>
+
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={item.isLumpsum}
+                    onChange={() => toggleLumpsum(item.id)}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <button
+        onClick={addItem}
+        className="bg-blue-500 text-white px-4 py-2 rounded-lg w-full"
+      >
+        + Add Item
+      </button>
+
+      {/* TOTALS */}
+      <div className="grid grid-cols-2 gap-4">
+        <input
+          type="number"
+          value={advance}
+          onChange={(e) => setAdvance(Number(e.target.value))}
+          className="border p-2 rounded-lg"
+          placeholder="Advance"
+        />
+
+        <div className="text-right">
+          <p>Total: ₹{total}</p>
+          <p>Grand: ₹{grandTotal}</p>
+        </div>
+      </div>
+
+      {/* NOTES */}
+      <textarea
+        rows={3}
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        className="border p-2 rounded-lg"
+        placeholder="Notes"
+      />
+
+      <button
+        onClick={saveInvoice}
+        className="bg-green-600 text-white py-3 rounded-lg w-full"
+      >
+        {invoiceId ? "Update Invoice" : "Save Invoice"}
+      </button>
+    </div>
+  );
+
+  /* ✅ MAIN UI */
+  return (
+    <div className="p-3 md:p-6 bg-gray-100 min-h-screen">
+
+      {/* ✅ MOBILE TABS */}
+      <div className="md:hidden mb-4 flex border rounded-lg overflow-hidden">
         <button
-          onClick={saveInvoice}
-          className="bg-green-600 text-white py-3 w-full rounded-lg font-medium"
+          onClick={() => setActiveTab("form")}
+          className={`flex-1 py-2 ${
+            activeTab === "form" ? "bg-blue-500 text-white" : "bg-gray-200"
+          }`}
         >
-          {invoiceId ? "Update Invoice" : "Save Invoice"}
+          Form
+        </button>
+
+        <button
+          onClick={() => setActiveTab("preview")}
+          className={`flex-1 py-2 ${
+            activeTab === "preview"
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200"
+          }`}
+        >
+          Preview
         </button>
       </div>
 
-      {/* ✅ PREVIEW */}
-      <div className="bg-white rounded-xl border p-3 overflow-x-auto">
-        <InvoicePreview
-          type={type}
-          customer={customer}
-          address={address}
-          date={date}
-          items={items}
-          total={total}
-          advance={advance}
-          grandTotal={grandTotal}
-          notes={notes}
-        />
+      {/* ✅ MOBILE VIEW */}
+      <div className="md:hidden">
+        {activeTab === "form" && FormUI}
+        {activeTab === "preview" && (
+          <InvoicePreview
+            type={type}
+            customer={customer}
+            address={address}
+            date={date}
+            items={items}
+            total={total}
+            advance={advance}
+            grandTotal={grandTotal}
+            notes={notes}
+          />
+        )}
+      </div>
+
+      {/* ✅ DESKTOP VIEW */}
+      <div className="hidden md:grid grid-cols-2 gap-6">
+        {FormUI}
+
+        <div className="bg-white border rounded-xl p-3">
+          <InvoicePreview
+            type={type}
+            customer={customer}
+            address={address}
+            date={date}
+            items={items}
+            total={total}
+            advance={advance}
+            grandTotal={grandTotal}
+            notes={notes}
+          />
+        </div>
       </div>
     </div>
-  </div>
-);
-
+  );
 }

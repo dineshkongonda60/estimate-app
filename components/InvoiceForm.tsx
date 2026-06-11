@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import InvoicePreview from "./InvoicePreview";
+import Link from "next/link";
 
 type Item = {
   id: string;
@@ -11,19 +12,29 @@ type Item = {
   isLumpsum: boolean;
 };
 
-export default function InvoiceForm() {
-  const [type, setType] = useState("Estimate");
-  const [customer, setCustomer] = useState("");
-  const [address, setAddress] = useState("");
-  const [date, setDate] = useState("2026-06-11");
-  const [advance, setAdvance] = useState(0);
-  const [notes, setNotes] = useState("");
+export default function InvoiceForm({ initialData, invoiceId }: any){
 
-  const [items, setItems] = useState<Item[]>([
-    { id: "1", desc: "", sqft: 0, rate: 0, amount: 0, isLumpsum: false },
-  ]);
+const [type, setType] = useState(initialData?.type || "Estimate");
+const [customer, setCustomer] = useState(initialData?.customer || "");
+const [address, setAddress] = useState(initialData?.address || "");
+const [date, setDate] = useState(initialData?.date || "");
+const [advance, setAdvance] = useState(initialData?.advance || 0);
+const [notes, setNotes] = useState(initialData?.notes || "");
 
-  const saveInvoice = async () => {
+const [items, setItems] = useState(
+  initialData?.items || [
+    {
+      id: "1",
+      desc: "",
+      sqft: 0,
+      rate: 0,
+      amount: 0,
+      isLumpsum: false,
+    },
+  ]
+);
+
+const saveInvoice = async () => {
   const payload = {
     type,
     customer,
@@ -37,25 +48,41 @@ export default function InvoiceForm() {
   };
 
   try {
-    const res = await fetch("/api/invoice", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    let res;
+
+    if (invoiceId) {
+      // ✅ UPDATE EXISTING
+      res = await fetch("/api/invoice", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: invoiceId,
+          data: payload,
+        }),
+      });
+    } else {
+      // ✅ CREATE NEW
+      res = await fetch("/api/invoice", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+    }
 
     if (res.ok) {
-      alert("✅ Saved to DB");
+      alert(invoiceId ? "✅ Updated successfully" : "✅ Saved successfully");
     } else {
-      alert("❌ Failed to save");
+      alert("❌ Error");
     }
-  } catch (err) {
-    console.error(err);
-    alert("❌ Error occurred");
+  } catch (error) {
+    console.error(error);
+    alert("❌ Failed");
   }
 };
-
   const addItem = () => {
     setItems([
       ...items,
@@ -109,9 +136,15 @@ export default function InvoiceForm() {
 
   return (
     <div className="grid grid-cols-2 gap-6 p-4">
-
+    
       {/* ✅ LEFT SIDE FORM */}
       <div className="bg-white p-4 border shadow">
+        
+        <Link href="/invoices">
+        <button className="bg-gray-800 text-white px-4 py-2 mb-4">
+            View Invoices
+        </button>
+        </Link>
 
         <h2 className="text-xl font-bold mb-4">Invoice Form</h2>
 
@@ -266,12 +299,14 @@ export default function InvoiceForm() {
 </div>
 
 
+
 <button
   onClick={saveInvoice}
   className="bg-green-600 text-white px-4 py-2 mt-3"
 >
-  Save Invoice
+  {invoiceId ? "Update Invoice" : "Save Invoice"}
 </button>
+
 
       </div>
 

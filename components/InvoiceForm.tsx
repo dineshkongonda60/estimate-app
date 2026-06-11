@@ -44,7 +44,7 @@ export default function InvoiceForm({ initialData, invoiceId }: Props) {
 
   /* ✅ TOTALS */
   const total = items.reduce((sum, i) => sum + Number(i.amount || 0), 0);
-  const grandTotal = total - advance;
+const grandTotal = total - Number(advance || 0);
 
   /* ✅ SAVE */
   const saveInvoice = async () => {

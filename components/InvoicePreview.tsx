@@ -26,7 +26,7 @@ html2pdf()
       orientation: "portrait",
     },
     html2canvas: {
-      scale: 1.5,
+      scale: 2,
     },
     pagebreak: {
       mode: ["avoid-all", "css", "legacy"],
@@ -61,6 +61,7 @@ html2pdf()
             fontSize: "12px",
             color: "#000",           // ✅ important
             fontWeight: 500,         // ✅ improves clarity
+            WebkitFontSmoothing: "antialiased",
         }}
         >
 

@@ -161,7 +161,7 @@ export default function InvoiceForm({ initialData, invoiceId }: Props) {
 
   /* ✅ UI */
   return (
-    <div className="grid grid-cols-2 gap-6 p-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3">
       {/* ✅ LEFT SIDE FORM */}
       <div className="bg-white p-4 border shadow">
         
@@ -219,15 +219,15 @@ export default function InvoiceForm({ initialData, invoiceId }: Props) {
 
         {/* ✅ ITEMS */}
         <h3 className="font-semibold mt-4">Items</h3>
-
-        <table className="w-full border mt-2 text-sm">
+        <div className="overflow-x-auto">
+        <table className="min-w-[600px] w-full border mt-2 text-sm">
           <thead>
             <tr className="bg-gray-200">
-              <th className="border p-1">Desc</th>
-              <th className="border p-1">SqFt</th>
-              <th className="border p-1">Rate</th>
-              <th className="border p-1">Amount</th>
-              <th className="border p-1">Lump</th>
+                <th className="border p-1 min-w-[150px]">Desc</th>
+                <th className="border p-1 min-w-[80px]">SqFt</th>
+                <th className="border p-1 min-w-[80px]">Rate</th>
+                <th className="border p-1 min-w-[100px]">Amount</th>
+                <th className="border p-1 min-w-[60px]">Lump</th>
             </tr>
           </thead>
 
@@ -236,7 +236,7 @@ export default function InvoiceForm({ initialData, invoiceId }: Props) {
               <tr key={item.id}>
                 <td className="border">
                   <input
-                    className="w-full p-1"
+                    className="w-full p-2 text-sm"
                     value={item.desc}
                     onChange={(e) =>
                       updateItem(item.id, "desc", e.target.value)
@@ -248,7 +248,7 @@ export default function InvoiceForm({ initialData, invoiceId }: Props) {
                   <input
                     type="number"
                     disabled={item.isLumpsum}
-                    className="w-full p-1"
+                    className="w-full p-2 text-sm"
                     value={item.sqft}
                     onChange={(e) =>
                       updateItem(item.id, "sqft", Number(e.target.value))
@@ -260,7 +260,7 @@ export default function InvoiceForm({ initialData, invoiceId }: Props) {
                   <input
                     type="number"
                     disabled={item.isLumpsum}
-                    className="w-full p-1"
+                    className="w-full p-2 text-sm"
                     value={item.rate}
                     onChange={(e) =>
                       updateItem(item.id, "rate", Number(e.target.value))
@@ -271,7 +271,7 @@ export default function InvoiceForm({ initialData, invoiceId }: Props) {
                 <td className="border">
                   <input
                     type="number"
-                    className="w-full p-1"
+                    className="w-full p-2 text-sm"
                     value={item.amount}
                     onChange={(e) =>
                       updateItem(item.id, "amount", Number(e.target.value))
@@ -290,10 +290,11 @@ export default function InvoiceForm({ initialData, invoiceId }: Props) {
             ))}
           </tbody>
         </table>
+        </div>
 
         <button
           onClick={addItem}
-          className="mt-2 bg-blue-500 text-white px-3 py-1"
+          className="mt-2 bg-blue-500 text-white px-4 py-2 w-full md:w-auto"
         >
           + Add Item
         </button>

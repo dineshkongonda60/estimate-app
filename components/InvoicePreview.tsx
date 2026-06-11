@@ -48,20 +48,22 @@ html2pdf()
       </button>
 
       {/* ✅ A4 CONTAINER */}
-      <div
+      
+        <div
         id="invoice"
         style={{
-            width: "210mm",
-            height: "297mm",  // ✅ FIXED height (not minHeight)
-            padding: "8mm",   // ✅ reduce padding
-            boxSizing: "border-box",  // ✅ prevents overflow
-            overflow: "hidden",       // ✅ stops extra page
+            width: "100%",
+            maxWidth: "210mm",
+            margin: "0 auto",
+            padding: "8mm",
             background: "white",
             fontFamily: "Arial",
             fontSize: "12px",
-
+            color: "#000",           // ✅ important
+            fontWeight: 500,         // ✅ improves clarity
         }}
-      >
+        >
+
         {/* ✅ HEADER */}
         <div
           style={{
@@ -79,14 +81,14 @@ html2pdf()
 
           {/* ✅ COMPANY DETAILS */}
           <div style={{ textAlign: "center", flex: 1 }}>
-            <h1 style={{ margin: 0, fontWeight:"bold", fontSize:"20px" }}>Mallaiah Kongonda</h1>
-            <p style={{ margin: 0 }}>
+            <h1 style={{ margin: 0, fontWeight:"bold", fontSize:"20px", color:"#000" }}>Mallaiah Kongonda</h1>
+            <p style={{ margin: 0,color:"#000" }}>
               All Types of Civil Work & Repairing Construction
             </p>
-            <p style={{ margin: 0 }}>
+            <p style={{ margin: 0,color:"#000" }}>
               303/A Deepti Apartment, Near Gulmohar Apt, Virar(E)
             </p>
-            <p style={{ margin: 0 }}>
+            <p style={{ margin: 0,color:"#000" }}>
               Mobile: 9172056346, 9892544868
             </p>
           </div>
@@ -97,11 +99,11 @@ html2pdf()
           <div style={{ display: "flex" }}>
             <div style={{ flex: 2, padding: "10px" }}>
               <strong>To:</strong>
-              <p style={{ margin: 0 }}>{props.customer}</p>
-              <p style={{ margin: 0 }}>{props.address}</p>
+              <p style={{ margin: 0,color:"#000" }}>{props.customer}</p>
+              <p style={{ margin: 0,color:"#000" }}>{props.address}</p>
             </div>
 
-            <div style={{ flex: 1, padding: "10px", textAlign: "right" }}>
+            <div style={{ flex: 1, padding: "10px", textAlign: "right",color:"#000" }}>
               <p>Date: {props.date}</p>
             </div>
           </div>
@@ -228,11 +230,14 @@ html2pdf()
 
 /* ✅ COMMON STYLES */
 
+
 const cell = {
-  border: "1px solid #888",
-  padding: "6px",
-  height: "30px",
+  border: "1px solid #666",
+  padding: "5px",
+  height: "26px",
+  color: "#000",         // ✅ force black
 };
+
 
 const cellCenter = {
   ...cell,

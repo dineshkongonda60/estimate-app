@@ -2,111 +2,116 @@
 
 export default function InvoicePreview(props: any) {
   const generatePDF = async () => {
-  const element = document.getElementById("invoice");
-  if (!element) return;
+    const element = document.getElementById("invoice");
+    if (!element) return;
 
-  const html2pdf = (await import("html2pdf.js")).default;
+    const html2pdf = (await import("html2pdf.js")).default;
 
-  
- // ✅ Create dynamic file name
-  const customerName = props.customer
-    ? props.customer.replace(/\s+/g, "_")
-    : "Invoice";
+    const customerName = props.customer
+      ? props.customer.replace(/\s+/g, "_")
+      : "Invoice";
 
-  const fileName = `${customerName}_${props.type}.pdf`;
+    const fileName = `${customerName}_${props.type}.pdf`;
 
- 
-html2pdf()
-  .set({
-    filename: fileName,
-    margin: 0,
-    jsPDF: {
-      unit: "mm",
-      format: "a4",
-      orientation: "portrait",
-    },
-    html2canvas: {
-      scale: 2,
-    },
-    pagebreak: {
-      mode: ["avoid-all", "css", "legacy"],
-    },
-  } as any)   // ✅ ✅ ADD THIS
-  .from(element)
-  .save();
-
-};
+    html2pdf()
+      .set({
+        filename: fileName,
+        margin: 0,
+        jsPDF: {
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait",
+        },
+        html2canvas: {
+          scale: 2,
+        },
+        pagebreak: {
+          mode: ["avoid-all", "css", "legacy"],
+        },
+      } as any)
+      .from(element)
+      .save();
+  };
 
   return (
     <div>
-      {/* ✅ PDF BUTTON */}
+      {/* ✅ DOWNLOAD BUTTON */}
       <button
         onClick={generatePDF}
-        className="bg-red-500 text-white px-4 py-2 mb-4"
+        className="bg-red-500 text-white px-4 py-2 mb-4 rounded"
       >
         Download PDF
       </button>
 
-      {/* ✅ A4 CONTAINER */}
-      
-        <div
+      {/* ✅ INVOICE */}
+      <div
         id="invoice"
         style={{
-            width: "100%",
-            maxWidth: "210mm",
-            margin: "0 auto",
-            padding: "8mm",
-            background: "white",
-            fontFamily: "Arial",
-            fontSize: "12px",
-            color: "#000",           // ✅ important
-            fontWeight: 500,         // ✅ improves clarity
-            WebkitFontSmoothing: "antialiased",
+          width: "100%",
+          maxWidth: "210mm",
+          margin: "0 auto",
+          padding: "8mm",
+          background: "white",
+          fontFamily: "Arial",
+          fontSize: "12px",
+          color: "#000",
+          fontWeight: 500,
+          WebkitFontSmoothing: "antialiased",
         }}
-        >
+      >
 
         {/* ✅ HEADER */}
         <div
           style={{
             display: "flex",
-            /*border: "1px solid black",*/
             background: "#bcd0e5",
             padding: "10px",
             alignItems: "center",
           }}
         >
-          {/* ✅ LOGO */}
           <div style={{ width: "100px", textAlign: "center" }}>
-            <img src="/logo.png" style={{ width: "100px", height:"100px" }} />
+            <img src="/logo.png" style={{ width: "80px", height: "80px" }} />
           </div>
 
-          {/* ✅ COMPANY DETAILS */}
           <div style={{ textAlign: "center", flex: 1 }}>
-            <h1 style={{ margin: 0, fontWeight:"bold", fontSize:"20px", color:"#000" }}>Mallaiah Kongonda</h1>
-            <p style={{ margin: 0,color:"#000" }}>
+            <h1 style={{ margin: 0, fontWeight: "bold", fontSize: "20px" }}>
+              Mallaiah Kongonda
+            </h1>
+            <p style={{ margin: 0 }}>
               All Types of Civil Work & Repairing Construction
             </p>
-            <p style={{ margin: 0,color:"#000" }}>
+            <p style={{ margin: 0 }}>
               303/A Deepti Apartment, Near Gulmohar Apt, Virar(E)
             </p>
-            <p style={{ margin: 0,color:"#000" }}>
+            <p style={{ margin: 0 }}>
               Mobile: 9172056346, 9892544868
             </p>
           </div>
         </div>
 
-        {/* ✅ CUSTOMER + DATE */}
-        <div style={{ }}>
-          <div style={{ display: "flex" }}>
-            <div style={{ flex: 2, padding: "10px" }}>
-              <strong>To:</strong>
-              <p style={{ margin: 0,color:"#000" }}>{props.customer}</p>
-              <p style={{ margin: 0,color:"#000" }}>{props.address}</p>
-            </div>
+        {/* ✅ DIVIDER */}
+        <div style={{ borderBottom: "1px solid #444" }}></div>
 
-            <div style={{ flex: 1, padding: "10px", textAlign: "right",color:"#000" }}>
-              <p>Date: {props.date}</p>
-            </div>
+        {/* ✅ CUSTOMER + DATE */}
+        <div style={{ display: "flex" }}>
+          <div style={{ flex: 2, padding: "10px", lineHeight: "1.5" }}>
+            <strong>To,</strong>
+
+            <p style={{ margin: "5px 0", fontWeight: 600 }}>
+              {props.customer}
+            </p>
+
+            <p style={{ margin: 0, whiteSpace: "pre-line" }}>
+              {props.address}
+            </p>
+          </div>
+
+          <div style={{ flex: 1, padding: "10px", textAlign: "right" }}>
+            <p>
+              <strong>Date:</strong> {props.date}
+            </p>
+
+           
           </div>
         </div>
 
@@ -114,10 +119,9 @@ html2pdf()
         <div
           style={{
             textAlign: "center",
-            
-            borderTop: "none",
-            padding: "5px",
+            padding: "6px",
             fontWeight: "bold",
+            borderBottom: "1px solid #444",
           }}
         >
           {props.type}
@@ -129,11 +133,11 @@ html2pdf()
             width: "100%",
             borderCollapse: "collapse",
             tableLayout: "fixed",
-            border: "1px solid #888",
+            marginTop: "5px",
           }}
         >
           <thead>
-            <tr style={{ background: "#e0e0e0" }}>
+            <tr style={{ background: "#e5e5e5" }}>
               <th style={{ ...cellCenter, width: "10%" }}>Sr.No</th>
               <th style={{ ...cell, width: "40%" }}>Particulars</th>
               <th style={{ ...cellCenter, width: "15%" }}>Sq.Ft</th>
@@ -146,10 +150,8 @@ html2pdf()
             {props.items.map((item: any, i: number) => (
               <tr key={i}>
                 <td style={cellCenter}>{i + 1}</td>
-
                 <td style={cell}>{item.desc}</td>
 
-                {/* ✅ LUMPSUM LOGIC */}
                 <td style={cellCenter}>
                   {item.isLumpsum ? "Lumpsum" : item.sqft || ""}
                 </td>
@@ -158,89 +160,81 @@ html2pdf()
                   {item.isLumpsum ? "" : item.rate || ""}
                 </td>
 
-                <td style={cellCenter}>
-                  {item.amount || ""}
-                </td>
+                <td style={cellCenter}>{item.amount || ""}</td>
               </tr>
             ))}
 
-            {/* ✅ EMPTY ROWS FOR EXCEL LOOK */}
-            {[...Array(1)].map((_, i) => (
-              <tr key={"empty" + i}>
-                <td style={cell}></td>
-                <td style={cell}></td>
-                <td style={cell}></td>
-                <td style={cell}></td>
-                <td style={cell}></td>
-              </tr>
-            ))}
+            {/* EMPTY ROW */}
+            <tr>
+              <td style={cell}></td>
+              <td style={cell}></td>
+              <td style={cell}></td>
+              <td style={cell}></td>
+              <td style={cell}></td>
+            </tr>
           </tbody>
         </table>
 
-        {/* ✅ TOTALS (RIGHT SIDE BLOCK) */}
-        <table
+        {/* ✅ TOTALS */}
+        <div
           style={{
             width: "40%",
             marginLeft: "auto",
             marginTop: "10px",
-            borderCollapse: "collapse",
+            border: "1px solid #666",
           }}
         >
-          <tbody>
-            <tr>
-              <td style={cell}>Total:</td>
-              <td style={cellCenter}>{props.total}</td>
-            </tr>
+          <div style={row}>
+            <span>Total</span>
+            <span>{props.total}</span>
+          </div>
 
-            <tr>
-              <td style={cell}>Advance:</td>
-              <td style={cellCenter}>{props.advance}</td>
-            </tr>
+          <div style={row}>
+            <span>Advance</span>
+            <span>{props.advance}</span>
+          </div>
 
-            <tr>
-              <td style={{ ...cell, fontWeight: "bold" }}>
-                Grand Total:
-              </td>
-              <td style={{ ...cellCenter, fontWeight: "bold" }}>
-                {props.grandTotal}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        
-        {/* ✅ NOTES */}
-        <div
-        style={{
-            marginTop: "20px",
-            borderTop: "1px solid #555",
-            paddingTop: "10px",
-        }}
-        >
-        <strong>Note:</strong>
-
-        <p style={{ marginTop: "5px", whiteSpace: "pre-line" }}>
-            {props.notes || ""}
-        </p>
+          <div style={{ ...row, fontWeight: "bold", borderTop: "1px solid #666" }}>
+            <span>Grand Total</span>
+            <span>{props.grandTotal}</span>
+          </div>
         </div>
 
-            </div>
-            </div>
+        {/* ✅ NOTES */}
+        <div
+          style={{
+            marginTop: "20px",
+            borderTop: "1px solid #444",
+            paddingTop: "10px",
+          }}
+        >
+          <strong>Note:</strong>
+
+          <p style={{ marginTop: "5px", whiteSpace: "pre-line" }}>
+            {props.notes}
+          </p>
+        </div>
+
+      </div>
+    </div>
   );
 }
 
 /* ✅ COMMON STYLES */
-
-
 const cell = {
   border: "1px solid #666",
-  padding: "5px",
-  height: "26px",
-  color: "#000",         // ✅ force black
+  padding: "6px",
+  height: "28px",
+  color: "#000",
 };
-
 
 const cellCenter = {
   ...cell,
   textAlign: "center" as const,
+};
+
+const row = {
+  display: "flex",
+  justifyContent: "space-between",
+  padding: "6px",
 };
